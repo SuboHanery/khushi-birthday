@@ -104,32 +104,132 @@ function initScratchCard() {
         ctx.fillText("Scratch with your cursor", canvas.width / 2, canvas.height / 2);
     }
 
-    // Fire Celebration Pop
+    // Fire Grand Celebration Pop (Multi-stage bursts with rich colors)
     function fireConfettiPop() {
         if (typeof confetti !== 'undefined') {
-            const colors = ['#d4af37', '#f9e596', '#6a2a3b', '#eac5cc'];
+            const colors = ['#d4af37', '#f9e596', '#ffffff', '#e84393', '#6a2a3b', '#ff7675', '#ffd700'];
             
-            // 1. Initial large pop from both edges
-            confetti({ particleCount: 60, spread: 60, origin: { x: 0.1, y: 0.6 }, colors: colors, disableForReducedMotion: true });
-            confetti({ particleCount: 60, spread: 60, origin: { x: 0.9, y: 0.6 }, colors: colors, disableForReducedMotion: true });
+            // 1. Initial dual cannons from left and right edges
+            confetti({
+                particleCount: 90,
+                angle: 60,
+                spread: 75,
+                origin: { x: 0.05, y: 0.65 },
+                colors: colors,
+                scalar: 1.2
+            });
+            confetti({
+                particleCount: 90,
+                angle: 120,
+                spread: 75,
+                origin: { x: 0.95, y: 0.65 },
+                colors: colors,
+                scalar: 1.2
+            });
             
-            // 2. Secondary medium pop a moment later
+            // 2. High-energy secondary burst from quarter points (400ms)
             setTimeout(() => {
-                confetti({ particleCount: 40, spread: 70, origin: { x: 0.25, y: 0.5 }, colors: colors });
-                confetti({ particleCount: 40, spread: 70, origin: { x: 0.75, y: 0.5 }, colors: colors });
-            }, 1000);
+                confetti({
+                    particleCount: 70,
+                    spread: 80,
+                    origin: { x: 0.25, y: 0.5 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 70,
+                    spread: 80,
+                    origin: { x: 0.75, y: 0.5 },
+                    colors: colors
+                });
+            }, 400);
 
-            // 3. Final elegant center pop
+            // 3. Central golden explosion (800ms)
             setTimeout(() => {
-                confetti({ particleCount: 50, spread: 100, origin: { x: 0.5, y: 0.4 }, colors: colors });
-            }, 2200);
+                confetti({
+                    particleCount: 110,
+                    spread: 120,
+                    origin: { x: 0.5, y: 0.45 },
+                    colors: colors,
+                    ticks: 220,
+                    scalar: 1.15
+                });
+            }, 800);
+
+            // 4. Starburst raining encore (1400ms)
+            setTimeout(() => {
+                confetti({
+                    particleCount: 65,
+                    spread: 90,
+                    origin: { x: 0.35, y: 0.4 },
+                    colors: colors
+                });
+                confetti({
+                    particleCount: 65,
+                    spread: 90,
+                    origin: { x: 0.65, y: 0.4 },
+                    colors: colors
+                });
+            }, 1400);
+
+            // 5. Final shimmer shower (2000ms)
+            setTimeout(() => {
+                confetti({
+                    particleCount: 85,
+                    spread: 110,
+                    origin: { x: 0.5, y: 0.3 },
+                    colors: colors,
+                    gravity: 0.85
+                });
+            }, 2000);
         }
+    }
+
+    // Automatically check if card is ~40-50% scratched and trigger reveal
+    function checkScratchedArea() {
+        if (hasPopped) return;
+        try {
+            const imgData = ctx.getImageData(0, 0, canvas.width, canvas.height);
+            const data = imgData.data;
+            let clearedCount = 0;
+            let totalSampled = 0;
+            const stride = 16 * 4; // Sample every 16th pixel
+            for (let i = 3; i < data.length; i += stride) {
+                totalSampled++;
+                if (data[i] < 128) {
+                    clearedCount++;
+                }
+            }
+            const ratio = clearedCount / totalSampled;
+            if (ratio >= 0.40) {
+                triggerReveal();
+            }
+        } catch (e) {
+            if (scratchCount > 55) {
+                triggerReveal();
+            }
+        }
+    }
+
+    function triggerReveal() {
+        if (hasPopped) return;
+        hasPopped = true;
+        fireConfettiPop();
+        
+        // Smoothly fade out the canvas so the surprise reveals completely
+        canvas.style.transition = 'opacity 0.7s cubic-bezier(0.25, 1, 0.5, 1)';
+        canvas.style.opacity = '0';
+        setTimeout(() => {
+            canvas.style.pointerEvents = 'none';
+            canvas.style.display = 'none';
+        }, 700);
     }
 
     // Handle scratch (erasing) continuously and smoothly
     function scratch(x, y) {
+        if (hasPopped) return;
+
         ctx.globalCompositeOperation = 'destination-out';
-        ctx.lineWidth = 60; // Thicker brush for easier scratching
+        ctx.lineWidth = 65; // Generous brush for smooth scratching
         ctx.lineCap = 'round';
         ctx.lineJoin = 'round';
         
@@ -142,19 +242,13 @@ function initScratchCard() {
         lastY = y;
         
         scratchCount++;
-        // Trigger pop after user has scratched a fair amount
-        if (scratchCount > 60 && !hasPopped) {
-            hasPopped = true;
-            fireConfettiPop();
-            
-            // Fade out the scratch layer after the pop so they can scroll
-            setTimeout(() => {
-                canvas.style.transition = 'opacity 1s ease';
-                canvas.style.opacity = '0';
-                setTimeout(() => {
-                    canvas.style.pointerEvents = 'none';
-                }, 1000);
-            }, 1000);
+        // Check scratched area periodically
+        if (scratchCount % 6 === 0) {
+            checkScratchedArea();
+        }
+        // Safety threshold
+        if (scratchCount >= 65) {
+            triggerReveal();
         }
     }
 
@@ -171,7 +265,12 @@ function initScratchCard() {
         scratch(e.offsetX, e.offsetY);
     });
 
-    window.addEventListener('mouseup', () => isDrawing = false);
+    window.addEventListener('mouseup', () => {
+        isDrawing = false;
+        if (!hasPopped && scratchCount > 15) {
+            checkScratchedArea();
+        }
+    });
     
     canvas.addEventListener('mouseenter', (e) => {
         // If mouse button is held down while re-entering
@@ -199,7 +298,12 @@ function initScratchCard() {
         e.preventDefault();
     });
 
-    canvas.addEventListener('touchend', () => isDrawing = false);
+    canvas.addEventListener('touchend', () => {
+        isDrawing = false;
+        if (!hasPopped && scratchCount > 15) {
+            checkScratchedArea();
+        }
+    });
 
     // Init
     window.addEventListener('resize', resizeCanvas);
