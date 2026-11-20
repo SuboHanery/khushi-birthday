@@ -289,11 +289,11 @@ h1, h2, h3 {
     position: relative;
     width: 100%;
     max-width: 500px;
-    height: 320px;
+    height: 330px;
     margin: 0 auto;
     border-radius: 15px;
     overflow: hidden;
-    background: linear-gradient(rgba(42, 10, 20, 0.3), rgba(42, 10, 20, 0.3)), url('assets/scratch-photo.jpg') center/cover;
+    background: linear-gradient(rgba(42, 10, 20, 0.4), rgba(42, 10, 20, 0.4)), url('assets/scratch-photo.jpg') center 4% / cover no-repeat;
     box-shadow: 0 15px 30px rgba(0,0,0,0.5);
     border: 2px solid var(--clr-gold-dark);
 }
@@ -435,14 +435,15 @@ canvas#scratch-card {
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 30px;
     margin-top: 2rem;
+    align-items: stretch;
 }
 
 .wish-card {
-    background: rgba(0,0,0,0.3);
     padding: 5px;
     border-radius: 15px;
     background: var(--grad-gold);
     transition: transform 0.3s ease;
+    display: flex;
 }
 
 .wish-card:hover {
@@ -451,22 +452,42 @@ canvas#scratch-card {
 
 .card-border {
     background: var(--clr-bg-dark);
-    padding: 30px 20px;
+    padding: 25px 20px;
     border-radius: 12px;
-    height: 100%;
+    width: 100%;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+.wish-photo {
+    width: 100%;
+    height: 180px;
+    object-fit: cover;
+    object-position: center;
+    border-radius: 8px;
+    margin-bottom: 18px;
+    border: 1px solid var(--clr-gold-dark);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+    display: block;
+}
+
+.wish-card:first-child .wish-photo {
+    object-position: center 25%;
 }
 
 .card-border h3 {
     font-family: var(--font-cursive);
-    font-size: 2.5rem;
-    margin-bottom: 15px;
+    font-size: 2.3rem;
+    margin-bottom: 10px;
+    color: var(--clr-gold-light);
 }
 
 .card-border p {
     color: var(--clr-text-muted);
+    font-size: 0.95rem;
+    line-height: 1.6;
 }
 
 /* Final Section */
@@ -560,7 +581,8 @@ canvas#scratch-card {
     }
     
     .scratch-container {
-        height: 320px;
+        height: 330px;
+        background-position: center 4%;
     }
     
     .scratch-content h3 {
