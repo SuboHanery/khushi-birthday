@@ -213,7 +213,7 @@ h1, h2, h3 {
 
 #hero .title {
     font-family: var(--font-cursive);
-    font-size: 8rem;
+    font-size: clamp(3.5rem, 8vw, 6.5rem);
     text-transform: none;
     color: var(--clr-gold-light);
     text-shadow: 2px 2px 10px rgba(0,0,0,0.5), 0 0 25px rgba(212, 175, 55, 0.4);
@@ -521,7 +521,7 @@ canvas#scratch-card {
         padding: 60px 15px;
     }
 
-    #hero .title { font-size: 4rem; }
+    #hero .title { font-size: clamp(2.8rem, 10vw, 3.8rem); }
     .ca-title { font-size: 2rem; margin-right: 5px; }
     .pre-title { font-size: 1.5rem; }
     
